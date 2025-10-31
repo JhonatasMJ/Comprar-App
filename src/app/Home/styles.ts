@@ -24,6 +24,23 @@ export const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
+    paddingTop: 32,
     marginTop: 24,
+  },
+  header: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e7e6e6ff',
+    paddingBottom: 12,
+  },
+  clearBtn: { 
+    marginLeft: 'auto',
+  },
+  clearText: { 
+    fontSize: 12,
+    color: '#828282',
+    fontWeight: 600
   }
 });

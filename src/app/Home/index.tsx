@@ -1,53 +1,72 @@
-import { Image, View, TouchableOpacity, Text, FlatList } from "react-native";
-import { useState } from "react";
+import {
+  Image,
+  View,
+  TouchableOpacity,
+  Text,
+  FlatList,
+  Alert,
+} from "react-native";
+import { useState, useEffect } from "react";
 import { styles } from "./styles";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Filter } from "@/components/Filter";
 import { FilterStatus } from "@/types/FilterStatus";
 import { Item } from "@/components/Item";
+import { ItemStorage, itemsStorage } from "@/storage/itemsStorage";
 
 /* Criar um array de status, caso futuramente eu quiser adicionar mais */
 const FILTER_STATUS: FilterStatus[] = [FilterStatus.PENDING, FilterStatus.DONE];
 
-const ITEMS = [
-  {
-    id: "1",
-    status: FilterStatus.DONE,
-    description: "Bananas",
-  },
-  {
-    id: "2",
-    status: FilterStatus.PENDING,
-    description: "Refrigerante",
-  },
-  { id: "3", status: FilterStatus.PENDING, description: "10kg de arroz" },
-];
-
 export function Home() {
+  const [filter, setFilter] = useState(FilterStatus.PENDING);
+  const [description, setDescription] = useState("");
+  const [items, setItems] = useState<ItemStorage[]>([]);
 
-  const [filter, setFilter] = useState(FilterStatus.PENDING)
-  const [description, setDescription] = useState("")
+  function handleAdd() {
+    if (!description.trim()) {
+      return Alert.alert("Adicionar", "Informe a descrição do item.");
+    }
+
+    /* Criar um novo item e gera um id aleatório */
+    const newItem = {
+      id: Math.random().toString(36).substring(2),
+      description,
+      status: FilterStatus.PENDING,
+    };
+  }
+
+  async function getItems() {
+    try {
+      const response = await itemsStorage.get();
+      setItems(response);
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível filtrar os itens.");
+    }
+  }
+
+  useEffect(() => {
+    getItems();
+  }, []);
 
   return (
     <View style={styles.container}>
       <Image style={styles.logo} source={require("@/assets/logo.png")} />
-
       <View style={styles.form}>
-        <Input 
-         placeholder="O que você precisa comprar?"
-         onChangeText={(setDescription)}
+        <Input
+          placeholder="O que você precisa comprar?"
+          onChangeText={setDescription}
         />
-        <Button title="Adicionar" />
+        <Button onPress={handleAdd} title="Adicionar" />
       </View>
       <View style={styles.content}>
         <View style={styles.header}>
           {FILTER_STATUS.map((status) => (
-            <Filter 
-            key={status} 
-            status={status} 
-            isActive={status === filter} 
-            onPress={() => setFilter(status)}
+            <Filter
+              key={status}
+              status={status}
+              isActive={status === filter}
+              onPress={() => setFilter(status)}
             />
           ))}
 
@@ -57,7 +76,7 @@ export function Home() {
         </View>
 
         <FlatList
-          data={ITEMS}
+          data={items}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <Item
@@ -69,8 +88,9 @@ export function Home() {
           showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           contentContainerStyle={styles.listContent}
-          ListEmptyComponent={() => <Text style={styles.empty}>Nenhum item encontrado.</Text>}
-          
+          ListEmptyComponent={() => (
+            <Text style={styles.empty}>Nenhum item encontrado.</Text>
+          )}
         />
       </View>
     </View>

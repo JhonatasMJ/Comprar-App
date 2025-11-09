@@ -14,6 +14,7 @@ import { Filter } from "@/components/Filter";
 import { FilterStatus } from "@/types/FilterStatus";
 import { Item } from "@/components/Item";
 import { ItemStorage, itemsStorage } from "@/storage/itemsStorage";
+import Toast from "react-native-toast-message";
 
 /* Criar um array de status, caso futuramente eu quiser adicionar mais */
 const FILTER_STATUS: FilterStatus[] = [FilterStatus.PENDING, FilterStatus.DONE];
@@ -23,9 +24,13 @@ export function Home() {
   const [description, setDescription] = useState("");
   const [items, setItems] = useState<ItemStorage[]>([]);
 
-  function handleAdd() {
+  async function handleAdd() {
     if (!description.trim()) {
-      return Alert.alert("Adicionar", "Informe a descrição do item.");
+      return Toast.show({
+        type: "error",
+        text1: "Adicionar",
+        text2: "Informe a descrição do item.",
+      });
     }
 
     /* Criar um novo item e gera um id aleatório */
@@ -34,7 +39,30 @@ export function Home() {
       description,
       status: FilterStatus.PENDING,
     };
+
+    await itemsStorage.add(newItem);
+    await itemsByStatus();
+    setFilter(FilterStatus.PENDING);
+
+    Toast.show({
+      type: "success",
+      text1: "Adicionar",
+      text2: `Item "${description}" adicionado com sucesso!`,
+    });
+
+    setDescription("");
   }
+
+  async function itemsByStatus() {
+    try {
+      const response = await itemsStorage.getByStatus(filter)
+      setItems(response)
+    } catch (error) {
+      console.log(error)
+      Alert.alert("Erro", "Não foi possível filtrar os itens.")
+    }
+  }
+
 
   async function getItems() {
     try {
@@ -49,13 +77,20 @@ export function Home() {
     getItems();
   }, []);
 
+  
+  useEffect(() => {
+    itemsByStatus()
+  }, [filter])
+
   return (
     <View style={styles.container}>
+      <Toast />
       <Image style={styles.logo} source={require("@/assets/logo.png")} />
       <View style={styles.form}>
         <Input
           placeholder="O que você precisa comprar?"
           onChangeText={setDescription}
+          value={description}
         />
         <Button onPress={handleAdd} title="Adicionar" />
       </View>
@@ -81,7 +116,7 @@ export function Home() {
           renderItem={({ item }) => (
             <Item
               data={item}
-              onStatus={() => console.log("Status alterado")}
+              onStatus={() => console.log("Alterado")}              
               onRemove={() => console.log("Removido")}
             />
           )}

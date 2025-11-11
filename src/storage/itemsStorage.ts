@@ -20,10 +20,9 @@ async function get(): Promise<ItemStorage[]> {
 
 /* Retorna os itens por status, reutilizando o get que ja existe, fazendo apenas um filtro */
 async function getByStatus(status: FilterStatus): Promise<ItemStorage[]> {
-    const items = await get();
-    return items.filter((item) => item.status === status);
+  const items = await get();
+  return items.filter((item) => item.status === status);
 }
-
 
 /* Salva os itens */
 async function save(items: ItemStorage[]): Promise<void> {
@@ -39,12 +38,26 @@ async function add(newItem: ItemStorage): Promise<ItemStorage[]> {
   const items = await get();
   const updatedItems = [...items, newItem];
   await save(updatedItems);
-
   return updatedItems;
 }
 
-export const itemsStorage = { 
-    get,
-    getByStatus,
-    add
- };
+async function remove(id: string): Promise<void> {
+  const items = await get();
+  const updatedItems = items.filter((item) => item.id !== id);
+  await save(updatedItems);
+}
+
+async function clear(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(ITEMS_STORAGE_KEY);
+  } catch (error) {
+    throw new Error("ITEMS_CLEAR: " + error);
+  }
+}
+export const itemsStorage = {
+  get,
+  getByStatus,
+  add,
+  remove,
+  clear,
+};

@@ -5,6 +5,7 @@ import {
   Text,
   FlatList,
   Alert,
+  Modal,
 } from "react-native";
 import { useState, useEffect } from "react";
 import { styles } from "./styles";
@@ -15,12 +16,14 @@ import { FilterStatus } from "@/types/FilterStatus";
 import { Item } from "@/components/Item";
 import { ItemStorage, itemsStorage } from "@/storage/itemsStorage";
 import Toast from "react-native-toast-message";
+import { DeleteModal } from "@/components/DeleteModal";
 
 /* Criar um array de status, caso futuramente eu quiser adicionar mais */
 const FILTER_STATUS: FilterStatus[] = [FilterStatus.PENDING, FilterStatus.DONE];
 
 export function Home() {
   const [filter, setFilter] = useState(FilterStatus.PENDING);
+  const [modalVisible, setModalVisible] = useState(false);
   const [description, setDescription] = useState("");
   const [items, setItems] = useState<ItemStorage[]>([]);
 
@@ -55,36 +58,51 @@ export function Home() {
 
   async function itemsByStatus() {
     try {
-      const response = await itemsStorage.getByStatus(filter)
-      setItems(response)
-    } catch (error) {
-      console.log(error)
-      Alert.alert("Erro", "Não foi possível filtrar os itens.")
-    }
-  }
-
-
-  async function getItems() {
-    try {
-      const response = await itemsStorage.get();
+      const response = await itemsStorage.getByStatus(filter);
       setItems(response);
     } catch (error) {
+      console.log(error);
       Alert.alert("Erro", "Não foi possível filtrar os itens.");
     }
   }
 
-  useEffect(() => {
-    getItems();
-  }, []);
+  function handleModal() {
+    setModalVisible(true);
+  }
 
-  
+  async function handleRemove(id: string) {
+    try {
+      await itemsStorage.remove(id);
+      await itemsByStatus();
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Remover", "Não foi possível remover o item.");
+    }
+  }
+
+  async function handleClear() {
+    try {
+      await itemsStorage.clear();
+      setItems([]);
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Limpar", "Não foi possível limpar os itens.");
+    } finally {
+      setModalVisible(false);
+    }
+  }
+
   useEffect(() => {
-    itemsByStatus()
-  }, [filter])
+    itemsByStatus();
+  }, [filter]);
 
   return (
     <View style={styles.container}>
-      <Toast />
+      <DeleteModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onConfirm={handleClear}
+      />
       <Image style={styles.logo} source={require("@/assets/logo.png")} />
       <View style={styles.form}>
         <Input
@@ -105,7 +123,7 @@ export function Home() {
             />
           ))}
 
-          <TouchableOpacity style={styles.clearBtn}>
+          <TouchableOpacity onPress={handleModal} style={styles.clearBtn}>
             <Text style={styles.clearText}>Limpar</Text>
           </TouchableOpacity>
         </View>
@@ -116,8 +134,8 @@ export function Home() {
           renderItem={({ item }) => (
             <Item
               data={item}
-              onStatus={() => console.log("Alterado")}              
-              onRemove={() => console.log("Removido")}
+              onStatus={() => console.log("Alterado")}
+              onRemove={() => handleRemove(item.id)}
             />
           )}
           showsVerticalScrollIndicator={false}
@@ -128,6 +146,7 @@ export function Home() {
           )}
         />
       </View>
+       <Toast />
     </View>
   );
 }

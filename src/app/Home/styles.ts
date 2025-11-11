@@ -10,6 +10,9 @@ export const styles = StyleSheet.create({
     logo: {
     width: 134, /* Não usar pixel pois assim ele será responsivo */
     height: 34,
+    zIndex: 0,
+    elevation: 0,
+
   },
     form: {
       width: "100%",  
@@ -40,7 +43,7 @@ export const styles = StyleSheet.create({
   },
   clearText: { 
     fontSize: 12,
-    color: '#828282',
+    color: '#CB413D',
     fontWeight: 600
   },
   separator: {

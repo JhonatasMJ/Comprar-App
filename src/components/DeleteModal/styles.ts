@@ -47,6 +47,6 @@ export const styles = StyleSheet.create({
   },
   cancelBtnText: {
    fontWeight: 700,
-   color: "#b2b2b2"
+   color: "#2d2d2d"
   }
 });

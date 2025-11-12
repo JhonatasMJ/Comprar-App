@@ -41,12 +41,14 @@ async function add(newItem: ItemStorage): Promise<ItemStorage[]> {
   return updatedItems;
 }
 
+/* Remove um item */
 async function remove(id: string): Promise<void> {
   const items = await get();
   const updatedItems = items.filter((item) => item.id !== id);
   await save(updatedItems);
 }
 
+/* Limpa os itens */
 async function clear(): Promise<void> {
   try {
     await AsyncStorage.removeItem(ITEMS_STORAGE_KEY);
@@ -55,6 +57,7 @@ async function clear(): Promise<void> {
   }
 }
 
+/* Altera o status do item */
 async function toggleStatus (id:string): Promise<void> {
   const items = await get();
   const updatedItems = items.map((item) => 

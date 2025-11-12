@@ -56,6 +56,7 @@ export function Home() {
     setDescription("");
   }
 
+  /* Busca os itens filtrados pelo status */
   async function itemsByStatus() {
     try {
       const response = await itemsStorage.getByStatus(filter);
@@ -66,10 +67,12 @@ export function Home() {
     }
   }
 
+  /* Abre o modal */
   function handleModal() {
     setModalVisible(true);
   }
 
+  /* Remove o item */
   async function handleRemove(id: string) {
     try {
       await itemsStorage.remove(id);
@@ -80,6 +83,7 @@ export function Home() {
     }
   }
 
+  /* Limpa os itens */
   async function handleClear() {
     try {
       await itemsStorage.clear();
@@ -92,6 +96,7 @@ export function Home() {
     }
   }
 
+  /* Atualiza o status do item */
   async function handleStatus(id: string) {
     try {
       await itemsStorage.toggleStatus(id);

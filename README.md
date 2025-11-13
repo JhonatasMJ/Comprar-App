@@ -31,7 +31,7 @@
 * Expo
 * Typescript
 * Css
-* AsycnStorage
+* AsyncStorage
 * React Native Toast
 
 
